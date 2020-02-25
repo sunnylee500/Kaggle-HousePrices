@@ -3,7 +3,7 @@ import pandas as pd
 from houseprice_functions import ratings_to_ord
 
 #read_csv
-HousePrices = pd.read_csv("data/train.csv")
+HousePrices = pd.read_csv("data/test.csv")
 
 ################### Mike code
 #electrical | converted to ordinal | imputing NA to 0
@@ -32,14 +32,23 @@ gfin = {"Fin":1,"RFn":1,"Unf":0,"Na":0}
 HousePrices.GarageFinish = HousePrices.GarageFinish.fillna('Na')
 HousePrices.GarageFinish = HousePrices.GarageFinish.apply(lambda x: list(gfin.values())[list(gfin.keys()).index(x)])
 
+# Garage Area
+HousePrices['GarageArea'] = HousePrices['GarageArea'].fillna(0)
+
+
 #Garage Type | Dummified - dropping 'Attchd'| NA converted to no garage
 HousePrices.GarageType = HousePrices.GarageType.fillna('No_garage')
 garage_type_dummy = pd.get_dummies(HousePrices.GarageType).drop('Attchd',axis = 1)
 
 #### Basement ####
+
+#### TotalBsmtSF
+HousePrices['TotalBsmtSF'] = HousePrices['TotalBsmtSF'].fillna(0)
+
 # BsmtUnfSF Finished/ unfished basementv | percent between 0 and 1 | if Na, zero percent
 HousePrices['finishedbsmt'] = 1 - HousePrices['BsmtUnfSF']/HousePrices['TotalBsmtSF']
 HousePrices['finishedbsmt'] = HousePrices['finishedbsmt'].fillna(0) #to avoid divide by zero error
+
 
 ##### 
 #Fence | Dummy - dropped no fence | imputed NA to mean no fence
@@ -82,8 +91,15 @@ Living_Rec_Cont = HousePrices[["Id",
 
 # Total bath room - basement bathrooms are counted 75% of normal bathrooms
 # Then remove bathroom cols that are no longer needed
+
+
+Living_Rec_Cont["BsmtFullBath"] = Living_Rec_Cont["BsmtFullBath"].fillna(0)
+Living_Rec_Cont["BsmtHalfBath"] = Living_Rec_Cont["BsmtHalfBath"].fillna(0)
+Living_Rec_Cont["HalfBath"] = Living_Rec_Cont["HalfBath"].fillna(0)
+Living_Rec_Cont["FullBath"]  = Living_Rec_Cont["FullBath"].fillna(0)
 Living_Rec_Cont["TotalBath"] = Living_Rec_Cont["BsmtFullBath"]*0.75 + Living_Rec_Cont["FullBath"] + \
                                Living_Rec_Cont["BsmtHalfBath"]*0.75 + Living_Rec_Cont["HalfBath"]
+
 Living_Rec_Cont_Final = Living_Rec_Cont.drop(["BsmtFullBath","BsmtHalfBath","FullBath","HalfBath"], axis =1)
 
 #Select continuous features in the living and recreation category
@@ -277,4 +293,4 @@ full_df = full_df.merge(HousePrices, on = "Id")
 full_df = full_df.merge(sunny_clean, on = "Id" )
 
 
-hp_clean = full_df.to_csv('data/cleaned_houseprice.csv',index = False)
+hp_clean = full_df.to_csv('data/cleaned_houseprice_test.csv',index = False)
